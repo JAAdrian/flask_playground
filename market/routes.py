@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for
+from flask import render_template, redirect, url_for, flash, get_flashed_messages
 
 from market import app
 from market.models import Item, User
@@ -32,6 +32,9 @@ def register_page():
 
     if form.errors:
         for err_message in form.errors.values():
-            print(f'There was an error with creating a user: {err_message}')
+            flash(
+                f'There was an error with creating a user: {err_message}',
+                category='danger'
+            )
 
     return render_template('register.html', form=form)
