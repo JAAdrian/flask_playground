@@ -44,6 +44,9 @@ class User(db.Model, UserMixin):
             attempted_password
         )
 
+    def can_purchase(self, item_object):
+        return self.budget >= item_object.price
+
 
 
 class Item(db.Model):
@@ -56,3 +59,8 @@ class Item(db.Model):
 
     def __repr__(self):
         return f'Item {self.name}'
+
+    def buy(self, user):
+        self.owner = user.id
+        user.budget -= self.price
+        db.session.commit()
