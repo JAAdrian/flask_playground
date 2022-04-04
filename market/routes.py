@@ -19,6 +19,8 @@ def home_page():
 @login_required
 def market_page():
     purchase_form = PurchseItemForm()
+    selling_form = SellItemForm()
+
     if request.method == 'POST':
         purchased_item = request.form.get('purchased_item')
         purchased_item_object = Item.query.filter_by(name=purchased_item).first()
@@ -39,14 +41,39 @@ def market_page():
                     category='danger'
                 )
 
+
+        sold_item = request.form.get('sold_item')
+        sold_item_object = Item.query.filter_by(name=sold_item).first()
+
+        if sold_item_object:
+            if current_user.can_sell(sold_item_object):
+                sold_item_object.sell(current_user)
+                flash(
+                    f'Congratulations! You have sold '
+                    f'{sold_item_object.name} for '
+                    f'{sold_item_object.price} EUR.',
+                    category='success'
+                )
+            else:
+                flash(
+                    f'Unfortunately, you do not own '
+                    f'"{sold_item_object.name}"!',
+                    category='danger'
+                )
+
         return redirect(url_for('market_page'))
 
     if request.method == 'GET':
         items = Item.query.filter_by(owner=None)
+
+        owned_items = Item.query.filter_by(owner=current_user.id)
+
         return render_template(
             'market.html', 
             items=items, 
-            purchase_form=purchase_form
+            purchase_form=purchase_form,
+            selling_form=selling_form,
+            owned_items=owned_items
         )
 
 
